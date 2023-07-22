@@ -1,30 +1,69 @@
-function denseRanking(scores) {
-	// Clone the scores array and sort it in descending order
-	const sortedScores = [...scores].sort((a, b) => b - a);
+const readline = require('readline');
 
-	// Create a map to store player's rank based on their score
-	const rankMap = new Map();
+const rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout,
+});
 
-	// Initialize variables for tracking rank
-	let currentRank = 1;
-	let prevScore = null;
-
-	// Calculate the rank and store it in the map
-	for (const score of sortedScores) {
-		if (score !== prevScore) {
-			rankMap.set(score, currentRank);
-			currentRank++;
-		}
-		prevScore = score;
-	}
-
-	// Create an array of ranks corresponding to the input scores
-	const ranks = scores.map((score) => rankMap.get(score));
-
-	return ranks;
+function sortPlayersByScore(players) {
+	return players.sort((a, b) => b.score - a.score);
 }
 
-// Example usage:
-const playerScores = [85, 92, 78, 92, 90, 78, 85, 90];
-const rankedScores = denseRanking(playerScores);
-console.log(rankedScores);
+function findDenseRank(score, players) {
+	const sortedPlayers = sortPlayersByScore(players);
+	let rank = 1;
+	let lastRank = 1;
+
+	for (let i = 0; i < sortedPlayers.length; i++) {
+		const player = sortedPlayers[i];
+		if (player.score === score) {
+			rank = lastRank;
+			break;
+		}
+		rank += 1;
+		lastRank = rank;
+	}
+
+	return lastRank;
+}
+
+function processInput() {
+	rl.question('Input the number of players: ', (playerCount) => {
+		playerCount = parseInt(playerCount);
+
+		rl.question(
+			'Input the scores (comma-separated values): ',
+			(inputScores) => {
+				const scores = inputScores.split(',').map(Number);
+				const players = scores.map((score, index) => {
+					return { name: `Player ${index + 1}`, score: score };
+				});
+
+				rl.question('Input your number of playing: ', (myPlayerCount) => {
+					myPlayerCount = parseInt(myPlayerCount);
+
+					rl.question(
+						'Input each of your scores (comma-separated values): ',
+						(myScoresInput) => {
+							const myScores = myScoresInput.split(',').map(Number);
+
+							console.log('Your Ranks:');
+							console.log('------------');
+
+							myScores.forEach((score) => {
+								const lastRank = findDenseRank(score, players);
+								console.log(`Your Score: ${score} - Rank: ${lastRank}`);
+							});
+
+							console.log('------------');
+							rl.close();
+						}
+					);
+				});
+			}
+		);
+	});
+}
+
+// Start the program
+processInput();
